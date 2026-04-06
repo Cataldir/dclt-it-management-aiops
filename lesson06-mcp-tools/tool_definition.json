@@ -1,20 +1,20 @@
 {
-  "name": "criar_issue_github",
-  "description": "Cria uma issue em um repositório do GitHub.",
+  "name": "create_github_issue",
+  "description": "Create an issue in a GitHub repository.",
   "inputSchema": {
     "type": "object",
     "properties": {
       "repo": {
         "type": "string",
-        "description": "Nome do repositório (owner/repo)."
+        "description": "Repository name in owner/repo format."
       },
       "title": {
         "type": "string",
-        "description": "Título da issue a ser criada."
+        "description": "Title of the issue to create."
       },
       "body": {
         "type": "string",
-        "description": "Corpo descritivo da issue (opcional)."
+        "description": "Optional descriptive body of the issue."
       }
     },
     "required": ["repo", "title"]

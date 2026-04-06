@@ -1,0 +1,29 @@
+{
+  "name": "plan_remediation",
+  "description": "Propose an operational playbook based on symptom and severity.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "service_name": {
+        "type": "string",
+        "description": "Target service for remediation.",
+        "enum": ["fraud-api", "payments-api", "support-agent"]
+      },
+      "symptom": {
+        "type": "string",
+        "description": "Primary observed symptom.",
+        "enum": ["latency", "error_rate", "cpu", "bad_release"]
+      },
+      "severity": {
+        "type": "string",
+        "description": "Operational incident severity.",
+        "enum": ["medium", "high", "critical"]
+      },
+      "notes": {
+        "type": "string",
+        "description": "Optional extra notes for the plan."
+      }
+    },
+    "required": ["service_name", "symptom", "severity"]
+  }
+}

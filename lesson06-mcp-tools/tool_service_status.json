@@ -1,0 +1,15 @@
+{
+  "name": "check_service_status",
+  "description": "Return synthetic operational context for a monitored service.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "service_name": {
+        "type": "string",
+        "description": "Name of the service to inspect.",
+        "enum": ["fraud-api", "payments-api", "support-agent"]
+      }
+    },
+    "required": ["service_name"]
+  }
+}

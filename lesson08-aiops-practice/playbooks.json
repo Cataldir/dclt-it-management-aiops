@@ -1,0 +1,22 @@
+{
+  "scale_out_service": {
+    "description": "Scale out the service horizontally to absorb load.",
+    "requires_human_approval": false,
+    "expected_scenarios": ["latency_spike", "cpu_saturation"]
+  },
+  "restart_workers": {
+    "description": "Restart failed workers without changing the deployed version.",
+    "requires_human_approval": false,
+    "expected_scenarios": ["transient_error"]
+  },
+  "rollback_release": {
+    "description": "Roll back the latest release to the previous stable version.",
+    "requires_human_approval": true,
+    "expected_scenarios": ["bad_release"]
+  },
+  "open_incident_ticket": {
+    "description": "Escalate the incident for structured human handling.",
+    "requires_human_approval": false,
+    "expected_scenarios": ["healthy"]
+  }
+}

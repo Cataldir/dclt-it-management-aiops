@@ -1,0 +1,24 @@
+{
+  "name": "execute_playbook",
+  "description": "Execute a synthetic operational playbook with human approval checks when needed.",
+  "inputSchema": {
+    "type": "object",
+    "properties": {
+      "playbook_id": {
+        "type": "string",
+        "description": "Identifier of the playbook to execute.",
+        "enum": ["scale_out_service", "restart_workers", "rollback_release", "open_incident_ticket"]
+      },
+      "service_name": {
+        "type": "string",
+        "description": "Target service for the execution.",
+        "enum": ["fraud-api", "payments-api", "support-agent"]
+      },
+      "approved_by": {
+        "type": "string",
+        "description": "Human approver, when required."
+      }
+    },
+    "required": ["playbook_id", "service_name"]
+  }
+}

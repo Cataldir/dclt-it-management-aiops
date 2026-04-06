@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fraud-api-canary
+  labels:
+    app: fraud-api
+    strategy: canary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fraud-api
+      strategy: canary
+  template:
+    metadata:
+      labels:
+        app: fraud-api
+        strategy: canary
+    spec:
+      containers:
+        - name: fraud-api
+          image: ghcr.io/example/fraud-api:canary
+          ports:
+            - containerPort: 8000

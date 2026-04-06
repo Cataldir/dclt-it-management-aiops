@@ -1,79 +1,130 @@
-"""
-Aula 04 – Versionamento e Validação em MLOps
-=============================================
-Validação automatizada de modelo candidato versus modelo em produção,
-com verificações de acurácia (regressão) e fairness (disparidade entre grupos).
+"""Lesson 04 mini-application for model validation in MLOps."""
 
-Esse tipo de gate é integrado a pipelines CI/CD para bloquear
-automaticamente modelos que não atingem os limiares de qualidade.
-"""
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+from typing import Any
 
 import numpy as np
 from sklearn.metrics import accuracy_score, f1_score
 
 
-def validar_modelo_candidato(
+def generate_validation_scenario(scenario: str) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """Generate synthetic scenarios for promotion gates."""
+    y_true = np.array([1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1])
+    y_pred_prod = np.array([1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 1])
+    group = np.array(["A", "A", "B", "A", "B", "B", "A", "B", "A", "B", "A", "B"])
+
+    if scenario == "candidate_better":
+        y_pred_cand = np.array([1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1])
+    elif scenario == "accuracy_regression":
+        y_pred_cand = np.array([1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 1, 1])
+    elif scenario == "fairness_regression":
+        y_pred_cand = np.array([1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0])
+    else:
+        raise ValueError(f"Unknown scenario: {scenario}")
+
+    return y_true, y_pred_prod, y_pred_cand, group
+
+
+def validate_candidate_model(
     y_true: np.ndarray,
     y_pred_prod: np.ndarray,
     y_pred_cand: np.ndarray,
-    grupo: np.ndarray,
-    limiar_queda: float = 0.02,
-    limiar_fairness: float = 0.05,
-) -> tuple[bool, str]:
-    """Compara modelo candidato com o modelo em produção e verifica fairness.
-
-    Args:
-        y_true: Rótulos reais.
-        y_pred_prod: Predições do modelo em produção.
-        y_pred_cand: Predições do modelo candidato.
-        grupo: Vetor indicando o grupo demográfico de cada amostra.
-        limiar_queda: Queda máxima permitida em acurácia.
-        limiar_fairness: Disparidade máxima de F1 entre grupos.
-
-    Returns:
-        Tupla (aprovado, mensagem).
-    """
+    group: np.ndarray,
+    performance_drop_threshold: float = 0.02,
+    fairness_threshold: float = 0.05,
+) -> tuple[bool, dict[str, Any]]:
+    """Compare a candidate model with the baseline and return a structured report."""
     acc_prod = accuracy_score(y_true, y_pred_prod)
     acc_cand = accuracy_score(y_true, y_pred_cand)
     f1_prod = f1_score(y_true, y_pred_prod, average="weighted")
     f1_cand = f1_score(y_true, y_pred_cand, average="weighted")
 
-    # Gate 1 – Regressão de desempenho
-    if acc_cand < acc_prod - limiar_queda:
-        return False, f"REPROVADO: acurácia caiu de {acc_prod:.4f} para {acc_cand:.4f}"
+    gate_results: list[dict[str, Any]] = []
 
-    # Gate 2 – Fairness (diferença de F1 entre grupos)
-    grupos_unicos = np.unique(grupo)
-    f1_por_grupo: dict[str, float] = {}
-    for g in grupos_unicos:
-        mask = grupo == g
-        f1_por_grupo[g] = f1_score(y_true[mask], y_pred_cand[mask], average="weighted")
+    accuracy_delta = acc_cand - acc_prod
+    accuracy_gate_passed = acc_cand >= acc_prod - performance_drop_threshold
+    gate_results.append(
+        {
+            "gate": "performance_regression",
+            "passed": accuracy_gate_passed,
+            "baseline_accuracy": round(float(acc_prod), 4),
+            "candidate_accuracy": round(float(acc_cand), 4),
+            "accuracy_delta": round(float(accuracy_delta), 4),
+        }
+    )
 
-    disparidade = max(f1_por_grupo.values()) - min(f1_por_grupo.values())
-    if disparidade > limiar_fairness:
-        return (
-            False,
-            f"REPROVADO: disparidade de F1 entre grupos = {disparidade:.4f}",
+    f1_by_group: dict[str, float] = {}
+    for value in np.unique(group):
+        mask = group == value
+        f1_by_group[value] = float(
+            f1_score(y_true[mask], y_pred_cand[mask], average="weighted")
         )
 
-    return (
-        True,
-        f"APROVADO: acc={acc_cand:.4f}, f1={f1_cand:.4f}, disparidade={disparidade:.4f}",
+    disparity = max(f1_by_group.values()) - min(f1_by_group.values())
+    fairness_gate_passed = disparity <= fairness_threshold
+    gate_results.append(
+        {
+            "gate": "fairness_gap",
+            "passed": fairness_gate_passed,
+            "f1_by_group": {key: round(value, 4) for key, value in f1_by_group.items()},
+            "fairness_gap": round(float(disparity), 4),
+            "allowed_gap": fairness_threshold,
+        }
     )
+
+    approved = accuracy_gate_passed and fairness_gate_passed
+    report = {
+        "decision": "approved" if approved else "rejected",
+        "candidate_metrics": {
+            "accuracy": round(float(acc_cand), 4),
+            "f1_weighted": round(float(f1_cand), 4),
+        },
+        "production_metrics": {
+            "accuracy": round(float(acc_prod), 4),
+            "f1_weighted": round(float(f1_prod), 4),
+        },
+        "gate_results": gate_results,
+        "recommended_next_step": (
+            "promote_to_staging" if approved else "hold_release_and_review"
+        ),
+    }
+    return approved, report
+
+
+def save_report(path: str, report: dict[str, Any]) -> None:
+    """Persist a JSON validation report."""
+    output_path = Path(path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
 def main() -> None:
-    # Simulação de uso na pipeline CI/CD
-    y_true = np.array([1, 0, 1, 1, 0, 1, 0, 0, 1, 1])
-    y_pred_prod = np.array([1, 0, 1, 0, 0, 1, 0, 0, 1, 1])
-    y_pred_cand = np.array([1, 0, 1, 1, 0, 1, 1, 0, 1, 1])
-    grupo = np.array(["A", "A", "B", "A", "B", "B", "A", "B", "A", "B"])
+    parser = argparse.ArgumentParser(description="Local model validation gate")
+    parser.add_argument(
+        "--scenario",
+        choices=["candidate_better", "accuracy_regression", "fairness_regression"],
+        default="candidate_better",
+        help="Synthetic promotion scenario.",
+    )
+    parser.add_argument(
+        "--save-report",
+        type=str,
+        default=None,
+        help="Optional path to persist the final report.",
+    )
+    args = parser.parse_args()
 
-    aprovado, msg = validar_modelo_candidato(y_true, y_pred_prod, y_pred_cand, grupo)
+    y_true, y_pred_prod, y_pred_cand, group = generate_validation_scenario(args.scenario)
+    _, report = validate_candidate_model(y_true, y_pred_prod, y_pred_cand, group)
 
-    print("=== Validação de Modelo Candidato ===")
-    print(f"  Resultado: {msg}")
-    print(f"  Deploy autorizado: {aprovado}")
+    print(json.dumps(report, indent=2, ensure_ascii=False))
+
+    if args.save_report:
+        save_report(args.save_report, report)
 
 
 if __name__ == "__main__":

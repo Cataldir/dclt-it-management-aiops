@@ -1,33 +1,205 @@
-# dclt-it-management-aiops
+# IT Service Management and AI Ops - FIAP Pos Tech
 
-Código de suporte para a turma de DCLT na disciplina **IT Service Management and AI Ops** (FIAP POSTECH).
+This repository contains the hands-on course material for **IT Service Management and AI Ops** in **FIAP Pos Tech**. Each module is structured as an independent learning unit, with its own README, lesson script, supporting documentation, and enough artifacts to demonstrate real AIOps, MLOps, IaC, orchestration, MCP, CI/CD, and AgentOps scenarios.
 
-## Estrutura do Repositório
+The structure was aligned with the course notes in `D:\Documentos\FIAP\AI Ops\Materiais Escritos` and standardized into a format closer to the `Cataldir/k8savancado` repository: independent modules, predictable navigation, and repeatable documentation structure.
 
-| Pasta | Aula | Tema | Tecnologias |
-|-------|------|------|-------------|
-| [`aula01-aiops-anomaly-detection`](aula01-aiops-anomaly-detection/) | 01 | AI Ops vs DevOps – Detecção de anomalias | Python, NumPy |
-| [`aula02-ml-pipeline-mlflow`](aula02-ml-pipeline-mlflow/) | 02 | Ciclo de Desenvolvimento de IA – Pipeline ML | Python, MLflow, scikit-learn |
-| [`aula03-infra-terraform`](aula03-infra-terraform/) | 03 | Infraestrutura de IA – Padrões Arquiteturais | Terraform, Azure (AKS + GPU) |
-| [`aula04-model-validation`](aula04-model-validation/) | 04 | Versionamento e Validação em MLOps | Python, scikit-learn |
-| [`aula05-orchestration-airflow`](aula05-orchestration-airflow/) | 05 | Orquestração de Modelos e Agentes | Python, Apache Airflow |
-| [`aula06-mcp-tools`](aula06-mcp-tools/) | 06 | Ferramentas e Protocolos para Agentes (MCP) | Python, JSON Schema |
-| [`aula07-cicd-ml-pipeline`](aula07-cicd-ml-pipeline/) | 07 | Integração e Governança de Pipelines | GitHub Actions, Terraform |
-| [`aula08-aiops-practice`](aula08-aiops-practice/) | 08 | AI Ops na Prática – Projetos e Tendências | Python, NumPy |
+---
 
-## Como Usar
+## About The Course
 
-Cada pasta contém o código da respectiva aula com um `requirements.txt` (quando aplicável). Para executar:
+The course covers the evolution from traditional IT operations to AI pipelines and agent-assisted operations. The practical track goes from observability and anomaly detection to agentic remediation with guardrails and stochastic evaluation.
 
-```bash
-cd aula01-aiops-anomaly-detection
-pip install -r requirements.txt
-python anomaly_detection.py
-```
+---
 
-## Pré-requisitos
+## Module Structure
+
+### [Lesson 01 - AIOps Anomaly Detection](./lesson01-aiops-anomaly-detection/)
+**Telemetry monitor with anomaly detection**
+
+Hands-on observability and proactive detection demo with:
+- synthetic operational signals
+- incident and severity classification
+- initial action recommendation
+
+**Tecnologias**: Python, NumPy
+
+### [Lesson 02 - ML Pipeline MLflow](./lesson02-ml-pipeline-mlflow/)
+**ML pipeline with artifacts and tracking**
+
+Machine learning pipeline lab with:
+- data preparation
+- reproducible training
+- persisted metrics
+- model card and optional tracking
+
+**Tecnologias**: Python, pandas, scikit-learn, MLflow
+
+### [Lesson 03 - Terraform Infrastructure](./lesson03-infra-terraform/)
+**AI infrastructure as code**
+
+Infrastructure baseline for AI workloads with:
+- Resource Group and governance
+- private network
+- AKS
+- GPU node pool
+
+**Tecnologias**: Terraform, Azure
+
+### [Lesson 04 - Model Validation](./lesson04-model-validation/)
+**Model promotion gate**
+
+Candidate validation with:
+- performance regression checks
+- fairness by group
+- structured pipeline decision
+
+**Tecnologias**: Python, NumPy, scikit-learn
+
+### [Lesson 05 - Orchestration Airflow](./lesson05-orchestration-airflow/)
+**Fraud workflow with canary deployment and rollout**
+
+ML pipeline orchestration with:
+- Airflow DAG
+- ingestion and preprocessing
+- validation
+- canary deployment and monitoring
+
+**Tecnologias**: Python, Apache Airflow
+
+### [Lesson 06 - MCP Tools](./lesson06-mcp-tools/)
+**Operational tools for agents**
+
+MCP server demonstrating:
+- tool discovery
+- structured execution
+- remediation planning
+- local auditing
+
+**Tecnologias**: Python, JSON-RPC, JSON Schema, MCP
+
+### [Lesson 07 - CI/CD ML Pipeline](./lesson07-cicd-ml-pipeline/)
+**Governed train, validate, and deploy pipeline**
+
+CI/CD pipeline with:
+- GitHub Actions workflow
+- tests and fairness checks
+- agentic gate with Azure AI Foundry
+- Terraform during deployment
+- artifact registration
+
+**Tecnologias**: GitHub Actions, Python, Terraform, pytest, Azure AI Foundry
+
+### [Lesson 08 - AIOps Practice](./lesson08-aiops-practice/)
+**Agentic remediation with stochastic evaluation**
+
+Operational capstone with:
+- incident detection
+- playbook selection
+- human approval
+- execution and Monte Carlo evaluation
+
+**Tecnologias**: Python, NumPy, JSON
+
+---
+
+## Required Tools
+
+### Minimum baseline
 
 - Python 3.11+
-- Terraform 1.5+ (para a Aula 03)
-- Conta Azure (para provisionar infraestrutura da Aula 03)
-- Apache Airflow 2.8+ (para a Aula 05)
+- `pip`
+- Git
+
+### Module-specific tools
+
+- Terraform 1.5+ for Lessons 03 and 07
+- Apache Airflow 2.8+ for Lesson 05
+- Optional Azure account for real infrastructure deployment
+- Optional Azure AI Foundry project to enable the real agentic gate in Lesson 07
+
+---
+
+## How To Use This Repository
+
+Each module is **independent** and can be executed on its own. The standard structure of each module is:
+
+```text
+lessonXX-module/
+├── README.md           # Quick guide for the module
+├── LESSON_SCRIPT.md    # Lesson script / presentation guide
+├── docs/README.md      # Supporting documentation
+├── src/ or script.py   # Main source code
+├── scripts/            # Helper scripts (when applicable)
+├── k8s/ or infra/      # Manifests or IaC (when applicable)
+└── tests/              # Automated tests (when applicable)
+```
+
+### General Execution Flow
+
+1. Enter the lesson directory.
+2. Read the module `README.md`.
+3. Open `LESSON_SCRIPT.md` if you are using the material in class or in a presentation.
+4. Read `docs/README.md` for architecture, usage, and troubleshooting details.
+5. Run the quick-start flow for that module.
+
+Exemplo:
+
+```bash
+cd lesson01-aiops-anomaly-detection
+pip install -r requirements.txt
+python anomaly_detection.py --scenario latency_spike --save-report artifacts/report.json
+```
+
+---
+
+## Recommended Study Order
+
+1. Lesson 01 - observability and proactive detection foundations
+2. Lesson 02 - ML pipeline and artifacts
+3. Lesson 03 - infrastructure as code
+4. Lesson 04 - promotion gates and fairness
+5. Lesson 05 - workflow orchestration
+6. Lesson 06 - agent tooling through MCP
+7. Lesson 07 - governed CI/CD for models
+8. Lesson 08 - agentic remediation and evaluation
+
+---
+
+## Common Troubleshooting
+
+### Missing Python dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+For the CI/CD modules:
+
+```bash
+pip install -r requirements-ml.txt
+```
+
+### Terraform not initialized
+
+```bash
+terraform init
+```
+
+### Airflow not configured
+
+If Airflow is not ready locally yet, run the Lesson 05 scripts individually before trying the full DAG.
+
+### Model or gate does not run locally
+
+Check whether `scikit-learn`, `pandas`, and `pytest` are installed in the active environment.
+
+---
+
+## License
+
+This project is distributed under the MIT license.
+
+## Contributions
+
+This is an educational repository. Suggestions and improvements can be proposed through issues or pull requests.

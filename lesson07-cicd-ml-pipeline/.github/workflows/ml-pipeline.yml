@@ -1,13 +1,13 @@
 # ─────────────────────────────────────────────────────────────
-# Aula 07 – Integração e Governança de Pipelines de AI Ops
+# Lesson 07 - Integration and Governance for AI Ops Pipelines
 # ─────────────────────────────────────────────────────────────
-# Pipeline CI/CD em GitHub Actions para treinamento, validação
-# e deploy condicional de modelo de ML.
+# GitHub Actions CI/CD pipeline for training, validation,
+# and conditional deployment of an ML model.
 #
 # Jobs:
-#   train    → treina o modelo e extrai métricas
-#   validate → gate de qualidade (acurácia + fairness)
-#   deploy   → infra via Terraform + deploy canário
+#   train    -> trains the model and extracts metrics
+#   validate -> quality gate (accuracy + fairness)
+#   deploy   -> Terraform infra + canary deployment
 # ─────────────────────────────────────────────────────────────
 
 name: ML Model CI/CD Pipeline
@@ -16,12 +16,15 @@ on:
   push:
     branches: [main]
     paths:
-      - "models/**"
-      - "data/features/**"
+      - "lesson07-cicd-ml-pipeline/**"
 
 env:
-  MODEL_REGISTRY: ghcr.io/${{ github.repository }}/models
+  MODEL_REGISTRY: artifacts/model-registry.jsonl
   MIN_ACCURACY: "0.85"
+
+defaults:
+  run:
+    working-directory: lesson07-cicd-ml-pipeline
 
 jobs:
   train:
@@ -35,73 +38,105 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Instalar dependências
+      - name: Install dependencies
         run: pip install -r requirements-ml.txt
 
-      - name: Treinar modelo
+      - name: Train model
         id: train
         run: |
           python src/train.py \
-            --data data/features/latest.parquet \
+            --data data/features/latest.csv \
             --output models/credit_risk_v${{ github.run_number }}.pkl
           echo "model_path=models/credit_risk_v${{ github.run_number }}.pkl" >> $GITHUB_OUTPUT
 
-      - name: Avaliar métricas
+      - name: Evaluate metrics
         id: metrics
         run: |
-          ACCURACY=$(python src/evaluate.py --model ${{ steps.train.outputs.model_path }})
+          ACCURACY=$(python src/evaluate.py --model ${{ steps.train.outputs.model_path }} --data data/features/latest.csv --output artifacts/train-metrics.json)
           echo "accuracy=$ACCURACY" >> $GITHUB_OUTPUT
 
       - uses: actions/upload-artifact@v4
         with:
           name: trained-model
-          path: ${{ steps.train.outputs.model_path }}
+          path: lesson07-cicd-ml-pipeline/${{ steps.train.outputs.model_path }}
 
   validate:
     needs: train
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
 
-      - name: Verificar limiar de acurácia
+      - name: Install dependencies
+        run: pip install -r requirements-ml.txt
+
+      - name: Check accuracy threshold
         run: |
-          if (( $(echo "${{ needs.train.outputs.accuracy }} < $MIN_ACCURACY" | bc -l) )); then
-            echo "::error::Acurácia ${{ needs.train.outputs.accuracy }} abaixo do limiar $MIN_ACCURACY"
-            exit 1
-          fi
+          python - <<'PY'
+          accuracy = float("${{ needs.train.outputs.accuracy }}")
+          threshold = float("${{ env.MIN_ACCURACY }}")
+          if accuracy < threshold:
+              raise SystemExit(f"::error::Accuracy {accuracy:.4f} is below the threshold {threshold:.2f}")
+          PY
 
-      - name: Testes de viés e fairness
-        run: python src/bias_check.py --model ${{ needs.train.outputs.model_path }}
+      - name: Bias and fairness tests
+        run: |
+          python src/bias_check.py \
+            --model ${{ needs.train.outputs.model_path }} \
+            --data data/features/latest.csv \
+            --output artifacts/fairness-report.json
 
-      - name: Testes de integração
-        run: python -m pytest tests/integration/ -v
+      - name: Integration tests
+        run: pytest tests/integration/ -v
 
   deploy:
     needs: [train, validate]
     runs-on: ubuntu-latest
-    environment: production
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements-ml.txt
 
       - uses: actions/download-artifact@v4
         with:
           name: trained-model
+          path: lesson07-cicd-ml-pipeline/models
 
-      - name: Provisionar infra via Terraform
+      - name: Agentic release gate
+        run: |
+          python src/foundry_release_gate.py \
+            --model ${{ needs.train.outputs.model_path }} \
+            --data data/features/latest.csv \
+            --accuracy-threshold ${{ env.MIN_ACCURACY }} \
+            --deployment-strategy canary \
+            --traffic-weight 10 \
+            --mode auto \
+            --enforce \
+            --output artifacts/release-gate.json
+
+      - name: Provision infrastructure through Terraform
         run: |
           cd infra/
           terraform init && terraform apply -auto-approve \
             -var="model_version=v${{ github.run_number }}"
 
-      - name: Deploy canário (10% do tráfego)
+      - name: Canary deployment (10% of traffic)
         run: |
           python src/deploy.py \
             --strategy canary --weight 10 \
-            --model ${{ needs.train.outputs.model_path }}
+            --model ${{ needs.train.outputs.model_path }} \
+            --output artifacts/deployment-report.json
 
-      - name: Registrar modelo no registry
+      - name: Register model in the registry
         run: |
           python src/register_model.py \
             --path ${{ needs.train.outputs.model_path }} \
             --accuracy ${{ needs.train.outputs.accuracy }} \
-            --run-id ${{ github.run_id }}
+            --run-id ${{ github.run_id }} \
+            --registry $MODEL_REGISTRY

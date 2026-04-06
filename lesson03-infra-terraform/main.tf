@@ -1,10 +1,10 @@
 # ──────────────────────────────────────────────────────────────
-# Aula 03 – Infraestrutura de IA: Padrões Arquiteturais e Terraform
+# Lesson 03 - AI Infrastructure: Architectural Patterns and Terraform
 # ──────────────────────────────────────────────────────────────
-# Provisiona uma infraestrutura básica para IA na Azure:
-#   - Resource Group com tags
-#   - Rede Virtual (VNet) com sub-rede privada para GPU
-#   - Cluster AKS com node pool de sistema + node pool de GPU
+# Provisions a basic AI infrastructure stack on Azure:
+#   - Resource Group with tags
+#   - Virtual Network (VNet) with a private subnet for GPU workloads
+#   - AKS cluster with a system node pool plus a GPU node pool
 # ──────────────────────────────────────────────────────────────
 
 terraform {
@@ -22,22 +22,22 @@ provider "azurerm" {
   features {}
 }
 
-# ── Variáveis ────────────────────────────────────────────────
+# ── Variables ────────────────────────────────────────────────
 
 variable "environment" {
-  description = "Ambiente: dev, test ou prod"
+  description = "Environment: dev, test, or prod"
   type        = string
   default     = "dev"
 }
 
 variable "gpu_node_count" {
-  description = "Número de nós GPU no cluster"
+  description = "Number of GPU nodes in the cluster"
   type        = number
   default     = 2
 }
 
 variable "location" {
-  description = "Região do Azure"
+  description = "Azure region"
   type        = string
   default     = "eastus2"
 }
@@ -55,7 +55,7 @@ resource "azurerm_resource_group" "ai_rg" {
   }
 }
 
-# ── Rede Virtual (VNet) com sub-rede privada para GPU ────────
+# ── Virtual Network (VNet) with private subnet for GPU ───────
 
 resource "azurerm_virtual_network" "ai_vnet" {
   name                = "vnet-ai-${var.environment}"
@@ -71,7 +71,7 @@ resource "azurerm_subnet" "gpu_subnet" {
   address_prefixes     = ["10.0.1.0/24"]
 }
 
-# ── Cluster AKS com node pool de GPU para treinamento ────────
+# ── AKS cluster with GPU node pool for training ──────────────
 
 resource "azurerm_kubernetes_cluster" "ai_cluster" {
   name                = "aks-ai-${var.environment}"
@@ -93,12 +93,12 @@ resource "azurerm_kubernetes_cluster" "ai_cluster" {
   tags = azurerm_resource_group.ai_rg.tags
 }
 
-# ── Node pool dedicado a GPU para treinamento de modelos ─────
+# ── Dedicated GPU node pool for model training ───────────────
 
 resource "azurerm_kubernetes_cluster_node_pool" "gpu_pool" {
   name                  = "gpupool"
   kubernetes_cluster_id = azurerm_kubernetes_cluster.ai_cluster.id
-  vm_size               = "Standard_NC6s_v3" # GPU NVIDIA V100
+  vm_size               = "Standard_NC6s_v3" # NVIDIA V100 GPU
   node_count            = var.gpu_node_count
   vnet_subnet_id        = azurerm_subnet.gpu_subnet.id
 
