@@ -1,0 +1,107 @@
+# ─────────────────────────────────────────────────────────────
+# Aula 07 – Integração e Governança de Pipelines de AI Ops
+# ─────────────────────────────────────────────────────────────
+# Pipeline CI/CD em GitHub Actions para treinamento, validação
+# e deploy condicional de modelo de ML.
+#
+# Jobs:
+#   train    → treina o modelo e extrai métricas
+#   validate → gate de qualidade (acurácia + fairness)
+#   deploy   → infra via Terraform + deploy canário
+# ─────────────────────────────────────────────────────────────
+
+name: ML Model CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "models/**"
+      - "data/features/**"
+
+env:
+  MODEL_REGISTRY: ghcr.io/${{ github.repository }}/models
+  MIN_ACCURACY: "0.85"
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    outputs:
+      accuracy: ${{ steps.metrics.outputs.accuracy }}
+      model_path: ${{ steps.train.outputs.model_path }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependências
+        run: pip install -r requirements-ml.txt
+
+      - name: Treinar modelo
+        id: train
+        run: |
+          python src/train.py \
+            --data data/features/latest.parquet \
+            --output models/credit_risk_v${{ github.run_number }}.pkl
+          echo "model_path=models/credit_risk_v${{ github.run_number }}.pkl" >> $GITHUB_OUTPUT
+
+      - name: Avaliar métricas
+        id: metrics
+        run: |
+          ACCURACY=$(python src/evaluate.py --model ${{ steps.train.outputs.model_path }})
+          echo "accuracy=$ACCURACY" >> $GITHUB_OUTPUT
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: trained-model
+          path: ${{ steps.train.outputs.model_path }}
+
+  validate:
+    needs: train
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verificar limiar de acurácia
+        run: |
+          if (( $(echo "${{ needs.train.outputs.accuracy }} < $MIN_ACCURACY" | bc -l) )); then
+            echo "::error::Acurácia ${{ needs.train.outputs.accuracy }} abaixo do limiar $MIN_ACCURACY"
+            exit 1
+          fi
+
+      - name: Testes de viés e fairness
+        run: python src/bias_check.py --model ${{ needs.train.outputs.model_path }}
+
+      - name: Testes de integração
+        run: python -m pytest tests/integration/ -v
+
+  deploy:
+    needs: [train, validate]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: trained-model
+
+      - name: Provisionar infra via Terraform
+        run: |
+          cd infra/
+          terraform init && terraform apply -auto-approve \
+            -var="model_version=v${{ github.run_number }}"
+
+      - name: Deploy canário (10% do tráfego)
+        run: |
+          python src/deploy.py \
+            --strategy canary --weight 10 \
+            --model ${{ needs.train.outputs.model_path }}
+
+      - name: Registrar modelo no registry
+        run: |
+          python src/register_model.py \
+            --path ${{ needs.train.outputs.model_path }} \
+            --accuracy ${{ needs.train.outputs.accuracy }} \
+            --run-id ${{ github.run_id }}

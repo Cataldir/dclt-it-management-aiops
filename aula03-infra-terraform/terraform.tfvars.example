@@ -1,0 +1,6 @@
+# Aula 03 – Variáveis de ambiente Terraform
+# Sobrescreva os valores padrão conforme necessário.
+
+environment    = "dev"
+gpu_node_count = 2
+location       = "eastus2"
