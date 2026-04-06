@@ -32,8 +32,9 @@ Machine learning pipeline lab with:
 - reproducible training
 - persisted metrics
 - model card and optional tracking
+- agent-backed experiment review
 
-**Technologies**: Python, pandas, scikit-learn, MLflow
+**Technologies**: Python, pandas, scikit-learn, MLflow, Azure AI Foundry
 
 ### [Lesson 03 - Terraform Infrastructure](./lesson03-infra-terraform/)
 **AI infrastructure as code**
@@ -43,8 +44,9 @@ Infrastructure baseline for AI workloads with:
 - private network
 - AKS
 - GPU node pool
+- agent-backed Terraform plan review
 
-**Technologies**: Terraform, Azure
+**Technologies**: Terraform, Azure, Python, Azure AI Foundry
 
 ### [Lesson 04 - Model Validation](./lesson04-model-validation/)
 **Model promotion gate**
@@ -53,8 +55,9 @@ Candidate validation with:
 - performance regression checks
 - fairness by group
 - structured pipeline decision
+- agent-backed promotion review
 
-**Technologies**: Python, NumPy, scikit-learn
+**Technologies**: Python, NumPy, scikit-learn, Azure AI Foundry
 
 ### [Lesson 05 - Orchestration Airflow](./lesson05-orchestration-airflow/)
 **Fraud workflow with canary deployment and rollout**
@@ -64,8 +67,9 @@ ML pipeline orchestration with:
 - ingestion and preprocessing
 - validation
 - canary deployment and monitoring
+- agent-backed canary observation
 
-**Technologies**: Python, Apache Airflow
+**Technologies**: Python, Apache Airflow, Azure AI Foundry
 
 ### [Lesson 06 - MCP Tools](./lesson06-mcp-tools/)
 **Operational tools for agents**
@@ -75,8 +79,9 @@ MCP server demonstrating:
 - structured execution
 - remediation planning
 - local auditing
+- agent client orchestration loop
 
-**Technologies**: Python, JSON-RPC, JSON Schema, MCP
+**Technologies**: Python, JSON-RPC, JSON Schema, MCP, Azure AI Foundry
 
 ### [Lesson 07 - CI/CD ML Pipeline](./lesson07-cicd-ml-pipeline/)
 **Governed train, validate, and deploy pipeline**

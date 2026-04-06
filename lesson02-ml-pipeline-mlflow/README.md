@@ -18,6 +18,7 @@ This module shows the minimum lifecycle of an AI application that needs to move 
 - pandas
 - scikit-learn
 - MLflow
+- Azure AI Foundry through `azure-ai-projects`
 
 ## Prerequisites
 
@@ -30,6 +31,9 @@ This module shows the minimum lifecycle of an AI application that needs to move 
 - `LESSON_SCRIPT.md`: lesson script / presentation guide.
 - `docs/README.md`: supporting documentation and practical applications.
 - `ml_pipeline.py`: main executable.
+- `experiment_review_agent.py`: agent-backed experiment review.
+- `foundry_helper.py`: shared Foundry agent helper.
+- `.env.example`: environment variables for Azure AI Foundry integration.
 - `pyproject.toml`: lesson-local UV project definition.
 
 ## Quick Start
@@ -45,11 +49,22 @@ To use your own CSV:
 uv run python ml_pipeline.py --data patient_data.csv --artifacts-dir artifacts
 ```
 
+## Experiment Review Agent
+
+After running the pipeline, review the artifacts with the agent:
+
+```bash
+uv run python experiment_review_agent.py --artifacts-dir artifacts --mode auto --output artifacts/review.json
+```
+
+Use `--mode foundry-agent` with a configured `.env` to let a Foundry agent produce the review.
+
 ## Expected Outputs
 
 - `artifacts/model.pkl`
 - `artifacts/metrics.json`
 - `artifacts/model_card.md`
+- `artifacts/review.json` (experiment review agent output)
 
 ## Supporting Files
 
@@ -66,6 +81,7 @@ uv run python ml_pipeline.py --data patient_data.csv --artifacts-dir artifacts
 
 - Lesson 04 builds on the ideas of baselines and metrics for promotion gates.
 - Lesson 07 reuses the same flow inside CI/CD.
+- The experiment review agent pattern is reused across Lessons 03–06 and 08.
 
 ## Suggested Evaluation
 

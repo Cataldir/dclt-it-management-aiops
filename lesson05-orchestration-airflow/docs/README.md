@@ -10,14 +10,17 @@ The module uses a DAG as the backbone of the process. Each task emits an interme
 - Trained model.
 - Metrics, fairness, and canary reports.
 - Final rollout decision.
+- Agent-backed canary observation review (via `canary_observer_agent.py`).
 
 ## Where To Apply It
 
 - Airflow in data and ML pipelines.
 - Fraud, recommendation, or scoring orchestration.
 - Progressive delivery with technical criteria.
+- Automated canary decisions before full rollout.
 
 ## Quick Troubleshooting
 
 - If Airflow is not configured, run the scripts individually first.
 - If the DAG fails, check whether the `artifacts/` folder is being created and whether the Python dependencies were installed.
+- If the canary observer agent falls back to local mode, check whether `.env` contains the Foundry environment variables.

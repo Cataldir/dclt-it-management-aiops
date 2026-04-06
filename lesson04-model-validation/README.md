@@ -16,6 +16,7 @@ This module formalizes model promotion through technical and fairness gates. Ins
 - Python 3.13
 - NumPy
 - scikit-learn
+- Azure AI Foundry through `azure-ai-projects`
 
 ## Prerequisites
 
@@ -28,6 +29,9 @@ This module formalizes model promotion through technical and fairness gates. Ins
 - `LESSON_SCRIPT.md`: lesson script / presentation guide.
 - `docs/README.md`: supporting module documentation.
 - `model_validation.py`: main executable.
+- `promotion_review_agent.py`: agent-backed promotion review.
+- `foundry_helper.py`: shared Foundry agent helper.
+- `.env.example`: environment variables for Azure AI Foundry integration.
 - `pyproject.toml`: lesson-local UV project definition.
 
 ## Quick Start
@@ -35,6 +39,20 @@ This module formalizes model promotion through technical and fairness gates. Ins
 ```bash
 uv sync --python 3.13
 uv run python model_validation.py --scenario candidate_better --save-report artifacts/validation-report.json
+```
+
+### Promotion Review Agent
+
+Review the validation output with the agent:
+
+```bash
+uv run python promotion_review_agent.py --report artifacts/validation-report.json --mode auto --output artifacts/promotion-review.json
+```
+
+Or generate a scenario and review it directly:
+
+```bash
+uv run python promotion_review_agent.py --scenario accuracy_regression --mode auto --output artifacts/promotion-review.json
 ```
 
 ## Available Scenarios
@@ -48,6 +66,7 @@ uv run python model_validation.py --scenario candidate_better --save-report arti
 - JSON report with baseline and candidate metrics.
 - Result of each gate.
 - Clear next-step recommendation.
+- Agent-backed promotion review with rationale and recommended actions.
 
 ## Supporting Files
 
@@ -65,3 +84,4 @@ uv run python model_validation.py --scenario candidate_better --save-report arti
 - Lesson 05 reuses the gate concept before canary deployment.
 - Lesson 07 reproduces the same pattern inside CI/CD.
 - Lesson 08 applies the same reasoning to operational safety for agents.
+- The promotion review agent follows the same Foundry integration pattern used across Lessons 02, 03, 05, 06, and 08.

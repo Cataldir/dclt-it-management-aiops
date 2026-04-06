@@ -1,7 +1,7 @@
 [project]
-name = "lesson06-mcp-tools"
+name = "lesson03-infra-terraform"
 version = "0.1.0"
-description = "Lesson 06 MCP tooling mini-application."
+description = "Lesson 03 Terraform plan review agent."
 requires-python = ">=3.13,<3.14"
 dependencies = [
     "azure-ai-projects",

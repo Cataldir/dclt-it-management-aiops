@@ -16,10 +16,13 @@ This module shows how to move from an improvised environment to a repeatable inf
 - Terraform 1.5+
 - AzureRM Provider
 - Azure AKS
+- Python 3.13 (plan review agent)
+- Azure AI Foundry through `azure-ai-projects`
 
 ## Prerequisites
 
 - Terraform 1.5+
+- Python 3.13 and `uv` (for the plan review agent)
 - Optional Azure account to apply the real stack
 
 ## Module Structure
@@ -29,6 +32,10 @@ This module shows how to move from an improvised environment to a repeatable inf
 - `docs/README.md`: supporting documentation and practical applications.
 - `main.tf`: main stack.
 - `terraform.tfvars.example`: example values.
+- `plan_review_agent.py`: agent-backed Terraform plan reviewer.
+- `foundry_helper.py`: shared Foundry agent helper.
+- `.env.example`: environment variables for Azure AI Foundry integration.
+- `pyproject.toml`: lesson-local UV project definition for the agent.
 
 ## Quick Start
 
@@ -37,6 +44,22 @@ terraform init
 copy terraform.tfvars.example terraform.tfvars
 terraform plan -var-file=terraform.tfvars
 terraform apply -var-file=terraform.tfvars
+```
+
+### Plan Review Agent
+
+Review a Terraform plan with the agent (simulated plan when no file is provided):
+
+```bash
+uv sync --python 3.13
+uv run python plan_review_agent.py --mode auto --output artifacts/plan-review.json
+```
+
+To review a real plan:
+
+```bash
+terraform show -json tfplan > plan.json
+uv run python plan_review_agent.py --plan-file plan.json --mode auto --output artifacts/plan-review.json
 ```
 
 ## Provisioned Resources

@@ -17,6 +17,7 @@ This module turns isolated scripts into a repeatable and monitorable workflow. T
 - Apache Airflow
 - pandas
 - scikit-learn
+- Azure AI Foundry through `azure-ai-projects`
 
 ## Prerequisites
 
@@ -32,6 +33,9 @@ This module turns isolated scripts into a repeatable and monitorable workflow. T
 - `pyproject.toml`: lesson-local UV project definition.
 - `fraud_pipeline_dag.py`: main DAG.
 - `preprocess.py`, `evaluate.py`, `monitor.py`: workflow components.
+- `canary_observer_agent.py`: agent-backed canary deployment observer.
+- `foundry_helper.py`: shared Foundry agent helper.
+- `.env.example`: environment variables for Azure AI Foundry integration.
 - `scripts/`: helper operational scripts.
 - `k8s/`: illustrative canary manifest.
 
@@ -49,12 +53,24 @@ uv run python scripts/ingest_transactions.py --output artifacts/raw_transactions
 uv run python scripts/train_fraud_model.py --input artifacts/training_dataset.csv --model-output artifacts/fraud_model.pkl --metrics-output artifacts/metrics.json --fairness-output artifacts/fairness.json
 ```
 
+### Canary Observer Agent
+
+Observe a canary deployment with the agent (simulated scenarios when no report is provided):
+
+```bash
+uv run python canary_observer_agent.py --scenario healthy --mode auto --output artifacts/canary-observation.json
+uv run python canary_observer_agent.py --scenario error_spike --mode auto --output artifacts/canary-observation-error.json
+```
+
+Available canary scenarios: `healthy`, `error_spike`, `latency_breach`, `accuracy_drop`.
+
 ## Expected Outputs
 
 - Synthetic transaction dataset.
 - Serialized fraud model.
 - Metrics and fairness report.
 - Canary report and rollout decision.
+- Agent-backed canary observation review.
 
 ## Supporting Files
 
@@ -72,3 +88,4 @@ uv run python scripts/train_fraud_model.py --input artifacts/training_dataset.cs
 - Lesson 06 expands control through MCP tools.
 - Lesson 07 takes the same flow into governed CI/CD.
 - Lesson 08 closes the loop with agentic remediation.
+- The canary observer agent follows the same Foundry integration pattern used across Lessons 02–04, 06, and 08.

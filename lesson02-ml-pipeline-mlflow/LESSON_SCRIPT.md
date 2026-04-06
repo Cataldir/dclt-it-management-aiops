@@ -40,11 +40,17 @@ Goal: show that the pipeline output is more than just a `.pkl` file.
 
 Goal: show the natural evolution from a local pipeline to an auditable experiment trail.
 
+### Build 6 - Agent-backed experiment review
+
+Goal: demonstrate how a Foundry agent (or local policy) can review training artifacts and suggest next steps.
+
 ## Demo Commands
 
 ```bash
 python ml_pipeline.py --artifacts-dir artifacts
 python ml_pipeline.py --data patient_data.csv --artifacts-dir artifacts
+python experiment_review_agent.py --artifacts-dir artifacts --mode auto --output artifacts/review.json
+python experiment_review_agent.py --artifacts-dir artifacts --mode foundry-agent --output artifacts/review-foundry.json
 ```
 
 ## Where To Apply This Knowledge

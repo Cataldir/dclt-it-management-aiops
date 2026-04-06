@@ -30,6 +30,10 @@ Main file: `mcp_server.py`
 
 ### Build 5 - Audit tool calls
 
+### Build 6 - Agent client orchestration
+
+Goal: demonstrate the full loop — a client discovers tools, orchestrates remediation, and executes through MCP.
+
 ## Demo Commands
 
 ```bash
@@ -38,6 +42,11 @@ python mcp_server.py
 
 ```json
 {"jsonrpc":"2.0","id":1,"method":"tools/list"}
+```
+
+```bash
+python mcp_agent_client.py --service fraud-api --mode auto --auto-approve --output artifacts/orchestration.json
+python mcp_agent_client.py --service fraud-api --mode foundry-agent --auto-approve --output artifacts/orchestration-foundry.json
 ```
 
 ## Where To Apply This Knowledge

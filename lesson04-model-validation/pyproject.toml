@@ -6,6 +6,9 @@ requires-python = ">=3.13,<3.14"
 dependencies = [
     "numpy",
     "scikit-learn",
+    "azure-ai-projects",
+    "azure-identity",
+    "python-dotenv",
 ]
 
 [tool.uv]

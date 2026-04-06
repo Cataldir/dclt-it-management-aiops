@@ -30,6 +30,10 @@ Main file: `main.tf`
 
 ### Build 5 - Outputs and pipeline integration
 
+### Build 6 - Agent-backed plan review
+
+Goal: demonstrate how a Foundry agent (or local policy) can assess Terraform plans for destructive risk.
+
 ## Demo Commands
 
 ```bash
@@ -37,6 +41,8 @@ terraform init
 copy terraform.tfvars.example terraform.tfvars
 terraform plan -var-file=terraform.tfvars
 terraform apply -var-file=terraform.tfvars
+python plan_review_agent.py --mode auto --output artifacts/plan-review.json
+python plan_review_agent.py --plan-file plan.json --mode foundry-agent --output artifacts/plan-review-foundry.json
 ```
 
 ## Where To Apply This Knowledge

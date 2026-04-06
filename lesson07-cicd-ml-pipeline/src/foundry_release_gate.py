@@ -152,29 +152,17 @@ def parse_agent_json(raw_text: str) -> dict[str, Any]:
     return json.loads(stripped[start : end + 1])
 
 
-def extract_agent_message(messages: Any) -> str:
-    """Select the last assistant text message."""
-    last_message = ""
-    for message in messages:
-        if getattr(message, "role", None) != "assistant":
-            continue
-        text_messages = getattr(message, "text_messages", None)
-        if text_messages:
-            last_message = text_messages[-1].text.value
-
-    if not last_message:
-        raise ValueError("Could not locate the agent text response.")
-    return last_message
-
-
 def run_foundry_release_review(context: dict[str, Any]) -> dict[str, Any]:
-    """Run release review with a temporary agent in Azure AI Foundry."""
+    """Run release review with a versioned agent in Azure AI Foundry.
+
+    Uses the azure-ai-projects >= 2.0.0 Responses-based Agent API.
+    """
     from dotenv import load_dotenv
 
     load_dotenv(override=False)
 
-    from azure.ai.agents.models import ListSortOrder
     from azure.ai.projects import AIProjectClient
+    from azure.ai.projects.models import PromptAgentDefinition
     from azure.identity import DefaultAzureCredential
 
     project_endpoint = os.getenv("FOUNDRY_PROJECT_ENDPOINT")
@@ -186,46 +174,46 @@ def run_foundry_release_review(context: dict[str, Any]) -> dict[str, Any]:
             "Set FOUNDRY_PROJECT_ENDPOINT and FOUNDRY_MODEL_DEPLOYMENT_NAME to use Foundry mode."
         )
 
-    project_client = AIProjectClient(
-        endpoint=project_endpoint,
-        credential=DefaultAzureCredential(),
-    )
-    agent = project_client.agents.create_agent(
-        model=model_name,
-        name=agent_name,
-        instructions=(
-            "You are a DevOps governance agent. "
-            "Evaluate model release risk based on accuracy, fairness, and rollout strategy. "
-            "Respond only in JSON."
-        ),
-    )
-
-    try:
-        thread = project_client.agents.threads.create()
-        project_client.agents.messages.create(
-            thread_id=thread.id,
-            role="user",
-            content=build_foundry_prompt(context),
+    with (
+        DefaultAzureCredential() as credential,
+        AIProjectClient(endpoint=project_endpoint, credential=credential) as project_client,
+        project_client.get_openai_client() as openai_client,
+    ):
+        agent = project_client.agents.create_version(
+            agent_name=agent_name,
+            definition=PromptAgentDefinition(
+                model=model_name,
+                instructions=(
+                    "You are a DevOps governance agent. "
+                    "Evaluate model release risk based on accuracy, fairness, and rollout strategy. "
+                    "Respond only in JSON."
+                ),
+            ),
         )
 
-        run = project_client.agents.runs.create_and_process(
-            thread_id=thread.id,
-            agent_id=agent.id,
-        )
-        if run.status == "failed":
-            raise RuntimeError(f"Agent execution failed: {run.last_error}")
-
-        messages = project_client.agents.messages.list(
-            thread_id=thread.id,
-            order=ListSortOrder.ASCENDING,
-        )
-        response = parse_agent_json(extract_agent_message(messages))
-        response["engine"] = "azure-ai-foundry"
-        response["agent_name"] = agent.name
-        response["run_status"] = run.status
-        return response
-    finally:
-        project_client.agents.delete_agent(agent.id)
+        conversation_id: str | None = None
+        try:
+            conversation = openai_client.conversations.create(
+                items=[{"type": "message", "role": "user", "content": build_foundry_prompt(context)}],
+            )
+            conversation_id = conversation.id
+            response = openai_client.responses.create(
+                conversation=conversation_id,
+                extra_body={
+                    "agent_reference": {"name": agent.name, "type": "agent_reference"},
+                },
+            )
+            result = parse_agent_json(response.output_text)
+            result["engine"] = "azure-ai-foundry"
+            result["agent_name"] = agent.name
+            result["agent_version"] = agent.version
+            return result
+        finally:
+            if conversation_id is not None:
+                openai_client.conversations.delete(conversation_id=conversation_id)
+            project_client.agents.delete_version(
+                agent_name=agent.name, agent_version=agent.version,
+            )
 
 
 def evaluate_release(

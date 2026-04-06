@@ -9,14 +9,17 @@ The module keeps every step inside a single Python executable to keep the lesson
 - Serialized model for local reuse.
 - JSON metrics for comparing executions.
 - Model card for communication and governance.
+- Agent-backed experiment review (via `experiment_review_agent.py`).
 
 ## Where To Apply It
 
 - Baseline MLOps pipelines.
 - Proofs of concept that need to become repeatable delivery assets.
 - Initial artifact registration for CI/CD.
+- Automated experiment triage before human review.
 
 ## Quick Troubleshooting
 
 - If `mlflow` is not available, the pipeline still generates local artifacts.
 - If `scikit-learn` or `pandas` are missing, rerun `uv sync --python 3.13` from the lesson directory.
+- If the experiment review agent falls back to local mode, check whether `.env` contains `FOUNDRY_PROJECT_ENDPOINT` and `FOUNDRY_MODEL_DEPLOYMENT_NAME`.

@@ -30,11 +30,18 @@ Main file: `fraud_pipeline_dag.py`
 
 ### Build 5 - Monitoring and rollout
 
+### Build 6 - Agent-backed canary observation
+
+Goal: demonstrate how a Foundry agent (or local policy) can decide whether a canary deployment should continue, pause, or rollback.
+
 ## Demo Commands
 
 ```bash
 airflow dags test fraud_model_pipeline 2026-01-01
 python scripts/ingest_transactions.py --output artifacts/raw_transactions.jsonl
+python canary_observer_agent.py --scenario healthy --mode auto --output artifacts/canary-continue.json
+python canary_observer_agent.py --scenario error_spike --mode auto --output artifacts/canary-rollback.json
+python canary_observer_agent.py --scenario latency_breach --mode foundry-agent --output artifacts/canary-foundry.json
 ```
 
 ## Where To Apply This Knowledge

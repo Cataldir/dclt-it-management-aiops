@@ -1,4 +1,4 @@
-"""Shared Foundry agent helper for Lesson 08.
+"""Shared Foundry agent helper for Lesson 06.
 
 Uses the azure-ai-projects >= 2.0.0 Responses-based Agent API.
 See https://learn.microsoft.com/python/api/overview/azure/ai-projects-readme
@@ -25,7 +25,7 @@ CLI_MODE_CHOICES = (*NORMALIZED_MODES, *MODE_ALIASES.keys())
 
 
 def foundry_is_configured() -> bool:
-    return all(os.getenv(variable_name) for variable_name in FOUNDRY_REQUIRED_ENV_VARS)
+    return all(os.getenv(v) for v in FOUNDRY_REQUIRED_ENV_VARS)
 
 
 def normalize_mode(mode: str) -> str:

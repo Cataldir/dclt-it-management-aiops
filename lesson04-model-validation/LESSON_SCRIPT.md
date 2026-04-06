@@ -28,12 +28,18 @@ Main file: `model_validation.py`
 
 ### Build 4 - Produce a structured decision
 
+### Build 5 - Agent-backed promotion review
+
+Goal: demonstrate how a Foundry agent (or local policy) can interpret gate results and produce a human-readable promotion decision.
+
 ## Demo Commands
 
 ```bash
 python model_validation.py --scenario candidate_better --save-report artifacts/approved.json
 python model_validation.py --scenario accuracy_regression --save-report artifacts/performance-regression.json
 python model_validation.py --scenario fairness_regression --save-report artifacts/fairness-regression.json
+python promotion_review_agent.py --scenario candidate_better --mode auto --output artifacts/promotion-review.json
+python promotion_review_agent.py --report artifacts/approved.json --mode foundry-agent --output artifacts/promotion-review-foundry.json
 ```
 
 ## Where To Apply This Knowledge

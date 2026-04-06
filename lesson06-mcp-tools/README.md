@@ -17,6 +17,7 @@ This module demonstrates how to expose operational capabilities to agents throug
 - JSON-RPC 2.0
 - Simplified JSON Schema
 - Model Context Protocol
+- Azure AI Foundry through `azure-ai-projects`
 
 ## Prerequisites
 
@@ -30,6 +31,9 @@ This module demonstrates how to expose operational capabilities to agents throug
 - `docs/README.md`: supporting documentation.
 - `pyproject.toml`: lesson-local UV project definition.
 - `mcp_server.py`: local MCP server.
+- `mcp_agent_client.py`: agent client that discovers tools and orchestrates remediation.
+- `foundry_helper.py`: shared Foundry agent helper.
+- `.env.example`: environment variables for Azure AI Foundry integration.
 - `tool_*.json`: exposed tool definitions.
 
 ## Quick Start
@@ -44,6 +48,16 @@ Example STDIN request:
 ```json
 {"jsonrpc":"2.0","id":1,"method":"tools/list"}
 ```
+
+### MCP Agent Client
+
+Run the agent client to automatically discover tools and orchestrate a remediation flow:
+
+```bash
+uv run python mcp_agent_client.py --service fraud-api --mode auto --auto-approve --output artifacts/orchestration.json
+```
+
+The client starts the MCP server as a subprocess, lists tools, then runs _check status → plan → execute_ using local policy or a Foundry-driven orchestration strategy.
 
 ## Available Tools
 
@@ -67,6 +81,7 @@ Example STDIN request:
 
 - Lesson 05 provides the operational context.
 - Lesson 08 can consume the same playbooks and contracts.
+- The MCP agent client shows the full loop: tool discovery, orchestration, and execution using the same Foundry pattern from Lessons 02–05 and 08.
 
 ## Important Note
 
