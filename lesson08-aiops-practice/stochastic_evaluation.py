@@ -8,6 +8,7 @@ from pathlib import Path
 
 import numpy as np
 
+from agent_pipeline_common import CLI_MODE_CHOICES, normalize_mode
 from anomaly_remediation import execute_playbook, load_playbooks, run_remediation_flow
 
 SCENARIOS = ["healthy", "latency_spike", "cpu_saturation", "transient_error", "bad_release"]
@@ -27,11 +28,17 @@ def simulate_resolution(scenario: str, playbook_id: str, rng: np.random.Generato
     return bool(rng.random() <= probability)
 
 
-def run_stochastic_evaluation(episodes: int = 50, seed: int = 42) -> dict[str, object]:
+def run_stochastic_evaluation(
+    episodes: int = 50,
+    seed: int = 42,
+    mode: str = "local-policy",
+) -> dict[str, object]:
     """Run multiple episodes and aggregate adherence and safety metrics."""
     playbooks = load_playbooks()
     rng = np.random.default_rng(seed)
+    normalized_mode = normalize_mode(mode)
     results: list[dict[str, object]] = []
+    planning_engines: dict[str, int] = {}
 
     adherence_hits = 0
     safety_hits = 0
@@ -40,9 +47,15 @@ def run_stochastic_evaluation(episodes: int = 50, seed: int = 42) -> dict[str, o
 
     for episode in range(episodes):
         scenario = str(rng.choice(SCENARIOS, p=[0.15, 0.25, 0.2, 0.2, 0.2]))
-        report = run_remediation_flow(scenario=scenario, seed=seed + episode)
+        report = run_remediation_flow(
+            scenario=scenario,
+            seed=seed + episode,
+            mode=normalized_mode,
+        )
         plan = report["plan"]
         execution = report["execution"]
+        planning_engine = str(report.get("assessment", {}).get("engine", "local-policy"))
+        planning_engines[planning_engine] = planning_engines.get(planning_engine, 0) + 1
 
         expected_scenarios = playbooks[plan["playbook_id"]]["expected_scenarios"]
         task_adherence = scenario in expected_scenarios
@@ -76,6 +89,7 @@ def run_stochastic_evaluation(episodes: int = 50, seed: int = 42) -> dict[str, o
                 "episode": episode + 1,
                 "scenario": scenario,
                 "playbook_id": plan["playbook_id"],
+                "planning_engine": planning_engine,
                 "task_adherence": task_adherence,
                 "safety_compliant": safety_compliant,
                 "final_status": final_execution["status"],
@@ -85,6 +99,8 @@ def run_stochastic_evaluation(episodes: int = 50, seed: int = 42) -> dict[str, o
 
     aggregate = {
         "episodes": episodes,
+        "requested_mode": normalized_mode,
+        "planning_engines": planning_engines,
         "task_adherence_rate": round(adherence_hits / episodes, 4),
         "safety_compliance_rate": round(safety_hits / episodes, 4),
         "resolution_success_rate": round(resolved_hits / episodes, 4),
@@ -106,6 +122,12 @@ def main() -> None:
     parser.add_argument("--episodes", type=int, default=50, help="Number of Monte Carlo episodes.")
     parser.add_argument("--seed", type=int, default=42, help="Base seed for the simulation.")
     parser.add_argument(
+        "--mode",
+        choices=CLI_MODE_CHOICES,
+        default="local-policy",
+        help="Diagnosis and planning mode used in each remediation episode.",
+    )
+    parser.add_argument(
         "--save-report",
         type=str,
         default=None,
@@ -113,7 +135,7 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    report = run_stochastic_evaluation(episodes=args.episodes, seed=args.seed)
+    report = run_stochastic_evaluation(episodes=args.episodes, seed=args.seed, mode=args.mode)
     print(json.dumps(report, indent=2, ensure_ascii=False))
 
     if args.save_report:

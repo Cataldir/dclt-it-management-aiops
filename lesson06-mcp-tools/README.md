@@ -13,27 +13,30 @@ This module demonstrates how to expose operational capabilities to agents throug
 
 ## Technologies
 
-- Python 3.11+
+- Python 3.13
 - JSON-RPC 2.0
 - Simplified JSON Schema
 - Model Context Protocol
 
 ## Prerequisites
 
-- Python 3.11+
+- Python 3.13
+- `uv`
 
 ## Module Structure
 
 - `README.md`: quick guide for the module.
 - `LESSON_SCRIPT.md`: lesson script / presentation guide.
 - `docs/README.md`: supporting documentation.
+- `pyproject.toml`: lesson-local UV project definition.
 - `mcp_server.py`: local MCP server.
 - `tool_*.json`: exposed tool definitions.
 
 ## Quick Start
 
 ```bash
-python mcp_server.py
+uv sync --python 3.13
+uv run python mcp_server.py
 ```
 
 Example STDIN request:

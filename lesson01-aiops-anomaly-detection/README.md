@@ -13,14 +13,14 @@ This module introduces the transition from reactive operations based on static a
 
 ## Technologies
 
-- Python 3.11+
+- Python 3.13
 - NumPy
 - JSON as the operational handoff format
 
 ## Prerequisites
 
-- Python 3.11+
-- `pip`
+- Python 3.13
+- `uv`
 
 ## Module Structure
 
@@ -28,13 +28,13 @@ This module introduces the transition from reactive operations based on static a
 - `LESSON_SCRIPT.md`: lesson script / presentation guide.
 - `docs/README.md`: supporting documentation and practical application notes.
 - `anomaly_detection.py`: main executable for the lesson.
-- `requirements.txt`: minimum dependencies.
+- `pyproject.toml`: lesson-local UV project definition.
 
 ## Quick Start
 
 ```bash
-pip install -r requirements.txt
-python anomaly_detection.py --scenario latency_spike --save-report artifacts/lesson01-report.json
+uv sync --python 3.13
+uv run python anomaly_detection.py --scenario latency_spike --save-report artifacts/lesson01-report.json
 ```
 
 ## Available Scenarios

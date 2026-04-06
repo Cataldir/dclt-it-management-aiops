@@ -20,7 +20,7 @@ The module separates responsibilities across workflow, source code, tests, and i
 
 ## Quick Troubleshooting
 
-- If `pytest` fails, first verify that `requirements-ml.txt` was installed.
+- If `pytest` fails, rerun `uv sync --python 3.13` from the lesson directory.
 - If the deployment workflow does not reproduce locally, run `terraform init` inside `infra/`.
 - If the gate falls back to `local-policy`, check whether `.env` was filled with `FOUNDRY_PROJECT_ENDPOINT` and `FOUNDRY_MODEL_DEPLOYMENT_NAME`.
 - If Foundry mode fails due to authentication, run `az login` before local execution.

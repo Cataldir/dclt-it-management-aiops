@@ -13,14 +13,14 @@ This module formalizes model promotion through technical and fairness gates. Ins
 
 ## Technologies
 
-- Python 3.11+
+- Python 3.13
 - NumPy
 - scikit-learn
 
 ## Prerequisites
 
-- Python 3.11+
-- `pip`
+- Python 3.13
+- `uv`
 
 ## Module Structure
 
@@ -28,13 +28,13 @@ This module formalizes model promotion through technical and fairness gates. Ins
 - `LESSON_SCRIPT.md`: lesson script / presentation guide.
 - `docs/README.md`: supporting module documentation.
 - `model_validation.py`: main executable.
-- `requirements.txt`: module dependencies.
+- `pyproject.toml`: lesson-local UV project definition.
 
 ## Quick Start
 
 ```bash
-pip install -r requirements.txt
-python model_validation.py --scenario candidate_better --save-report artifacts/validation-report.json
+uv sync --python 3.13
+uv run python model_validation.py --scenario candidate_better --save-report artifacts/validation-report.json
 ```
 
 ## Available Scenarios

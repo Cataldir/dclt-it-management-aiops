@@ -18,5 +18,5 @@ The module is composed of a single Python executable that generates operational 
 
 ## Quick Troubleshooting
 
-- If `numpy` is not installed, run `pip install -r requirements.txt`.
+- If `numpy` is not installed, rerun `uv sync --python 3.13` from the lesson directory.
 - If you want to compare scenarios, save each execution to a different JSON file under `artifacts/`.

@@ -1,0 +1,17 @@
+[project]
+name = "lesson07-cicd-ml-pipeline"
+version = "0.1.0"
+description = "Lesson 07 CI/CD and governance mini-application."
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "numpy",
+    "pandas",
+    "pytest",
+    "scikit-learn",
+    "azure-ai-projects",
+    "azure-identity",
+    "python-dotenv",
+]
+
+[tool.uv]
+package = false

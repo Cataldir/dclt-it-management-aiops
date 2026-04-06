@@ -1,7 +1,0 @@
-numpy
-pandas
-pytest
-scikit-learn
-azure-ai-projects
-azure-identity
-python-dotenv

@@ -1,0 +1,14 @@
+[project]
+name = "lesson05-orchestration-airflow"
+version = "0.1.0"
+description = "Lesson 05 orchestration and Airflow mini-application."
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "apache-airflow>=2.8",
+    "numpy",
+    "pandas",
+    "scikit-learn",
+]
+
+[tool.uv]
+package = false

@@ -17,7 +17,7 @@ It now also includes an agentic release governance gate: the pipeline can consul
 
 ## Technologies
 
-- Python 3.11+
+- Python 3.13
 - GitHub Actions
 - Terraform
 - pytest
@@ -26,8 +26,8 @@ It now also includes an agentic release governance gate: the pipeline can consul
 
 ## Prerequisites
 
-- Python 3.11+
-- `pip`
+- Python 3.13
+- `uv`
 - Terraform 1.5+ to reproduce deployment locally
 - Optional Azure AI Foundry project to enable the real agent mode
 
@@ -36,6 +36,7 @@ It now also includes an agentic release governance gate: the pipeline can consul
 - `README.md`: quick guide for the module.
 - `LESSON_SCRIPT.md`: lesson script / presentation guide.
 - `docs/README.md`: supporting documentation.
+- `pyproject.toml`: lesson-local UV project definition.
 - `.github/workflows/`: CI/CD workflow.
 - `src/`: training, evaluation, fairness, agentic gate, deployment, and registration.
 - `tests/`: contract tests.
@@ -45,19 +46,19 @@ It now also includes an agentic release governance gate: the pipeline can consul
 ## Quick Start
 
 ```bash
-pip install -r requirements-ml.txt
-python src/train.py --data data/features/latest.csv --output models/credit_risk_local.pkl
-python src/evaluate.py --model models/credit_risk_local.pkl --data data/features/latest.csv
-python src/bias_check.py --model models/credit_risk_local.pkl --data data/features/latest.csv
-python src/foundry_release_gate.py --model models/credit_risk_local.pkl --mode dry-run --output artifacts/release-gate.json
-pytest tests/integration -v
+uv sync --python 3.13
+uv run python src/train.py --data data/features/latest.csv --output models/credit_risk_local.pkl
+uv run python src/evaluate.py --model models/credit_risk_local.pkl --data data/features/latest.csv
+uv run python src/bias_check.py --model models/credit_risk_local.pkl --data data/features/latest.csv
+uv run python src/foundry_release_gate.py --model models/credit_risk_local.pkl --mode dry-run --output artifacts/release-gate.json
+uv run pytest tests/integration -v
 ```
 
 ### Running With Azure AI Foundry
 
 ```bash
 cp .env.example .env
-python src/foundry_release_gate.py --model models/credit_risk_local.pkl --mode foundry --output artifacts/release-gate-foundry.json
+uv run python src/foundry_release_gate.py --model models/credit_risk_local.pkl --mode foundry --output artifacts/release-gate-foundry.json
 ```
 
 ## Expected Outputs

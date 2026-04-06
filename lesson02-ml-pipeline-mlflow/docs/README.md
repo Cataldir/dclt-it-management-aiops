@@ -19,4 +19,4 @@ The module keeps every step inside a single Python executable to keep the lesson
 ## Quick Troubleshooting
 
 - If `mlflow` is not available, the pipeline still generates local artifacts.
-- If `scikit-learn` or `pandas` are missing, reinstall them with `pip install -r requirements.txt`.
+- If `scikit-learn` or `pandas` are missing, rerun `uv sync --python 3.13` from the lesson directory.

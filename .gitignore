@@ -1,0 +1,15 @@
+.env
+.venv/
+**/.venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+**/.pytest_cache/
+mlflow.db
+mlruns/
+lesson*/artifacts/
+lesson06-mcp-tools/audit_log.jsonl
+lesson07-cicd-ml-pipeline/data/features/latest.csv
+lesson07-cicd-ml-pipeline/models/*.pkl
+lesson07-cicd-ml-pipeline/models/*.metrics.json

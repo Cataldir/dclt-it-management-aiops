@@ -1,5 +1,5 @@
-# Aula 03 – Variáveis de ambiente Terraform
-# Sobrescreva os valores padrão conforme necessário.
+# Lesson 03 - Terraform environment variables
+# Override the default values as needed.
 
 environment    = "dev"
 gpu_node_count = 2

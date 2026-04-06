@@ -1,0 +1,14 @@
+[project]
+name = "lesson02-ml-pipeline-mlflow"
+version = "0.1.0"
+description = "Lesson 02 ML pipeline and MLflow mini-application."
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "pandas",
+    "mlflow",
+    "scikit-learn",
+    "numpy",
+]
+
+[tool.uv]
+package = false

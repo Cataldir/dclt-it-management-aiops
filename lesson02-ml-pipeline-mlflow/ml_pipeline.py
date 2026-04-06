@@ -126,7 +126,11 @@ def run_pipeline(
 
     with run_context:
         params = {"n_estimators": 200, "max_depth": 10, "random_state": seed}
-        model = RandomForestClassifier(**params)
+        model = RandomForestClassifier(
+            n_estimators=params["n_estimators"],
+            max_depth=params["max_depth"],
+            random_state=params["random_state"],
+        )
         model.fit(X_train, y_train)
 
         y_pred = model.predict(X_test)

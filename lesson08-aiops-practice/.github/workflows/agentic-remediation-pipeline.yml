@@ -1,0 +1,79 @@
+name: Agentic Remediation Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lesson08-aiops-practice/**"
+
+env:
+  REMEDIATION_SCENARIO: bad_release
+  EVALUATION_EPISODES: "25"
+  FOUNDRY_REMEDIATION_AGENT_NAME: aiops-remediation-orchestrator
+  FOUNDRY_EVALUATION_AGENT_NAME: aiops-remediation-evaluator
+
+defaults:
+  run:
+    working-directory: lesson08-aiops-practice
+
+jobs:
+  remediation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Sync project environment
+        run: uv sync --python 3.13
+
+      - name: Agentic remediation planning and execution
+        run: |
+          uv run python agentic_remediation_pipeline.py \
+            --scenario ${{ env.REMEDIATION_SCENARIO }} \
+            --mode auto \
+            --auto-approve \
+            --enforce \
+            --output artifacts/remediation-agent.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lesson08-remediation-report
+          path: lesson08-aiops-practice/artifacts/remediation-agent.json
+
+  evaluation:
+    needs: remediation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - uses: astral-sh/setup-uv@v5
+
+      - name: Sync project environment
+        run: uv sync --python 3.13
+
+      - name: Generate stochastic evaluation dataset
+        run: |
+          uv run python stochastic_evaluation.py \
+            --episodes ${{ env.EVALUATION_EPISODES }} \
+            --mode auto \
+            --save-report artifacts/stochastic-eval.json
+
+      - name: Agentic evaluation gate
+        run: |
+          uv run python agentic_evaluation_gate.py \
+            --report artifacts/stochastic-eval.json \
+            --mode auto \
+            --enforce \
+            --output artifacts/evaluation-gate.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lesson08-evaluation-report
+          path: |
+            lesson08-aiops-practice/artifacts/stochastic-eval.json
+            lesson08-aiops-practice/artifacts/evaluation-gate.json

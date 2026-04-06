@@ -13,22 +13,23 @@ This module turns isolated scripts into a repeatable and monitorable workflow. T
 
 ## Technologies
 
-- Python 3.11+
+- Python 3.13
 - Apache Airflow
 - pandas
 - scikit-learn
 
 ## Prerequisites
 
-- Python 3.11+
+- Python 3.13
 - Apache Airflow 2.8+
-- `pip`
+- `uv`
 
 ## Module Structure
 
 - `README.md`: quick guide for the module.
 - `LESSON_SCRIPT.md`: lesson script / presentation guide.
 - `docs/README.md`: supporting documentation.
+- `pyproject.toml`: lesson-local UV project definition.
 - `fraud_pipeline_dag.py`: main DAG.
 - `preprocess.py`, `evaluate.py`, `monitor.py`: workflow components.
 - `scripts/`: helper operational scripts.
@@ -37,15 +38,15 @@ This module turns isolated scripts into a repeatable and monitorable workflow. T
 ## Quick Start
 
 ```bash
-pip install -r requirements.txt
-airflow dags test fraud_model_pipeline 2026-01-01
+uv sync --python 3.13
+uv run airflow dags test fraud_model_pipeline 2026-01-01
 ```
 
 To run components individually:
 
 ```bash
-python scripts/ingest_transactions.py --output artifacts/raw_transactions.jsonl
-python scripts/train_fraud_model.py --input artifacts/training_dataset.csv --model-output artifacts/fraud_model.pkl --metrics-output artifacts/metrics.json --fairness-output artifacts/fairness.json
+uv run python scripts/ingest_transactions.py --output artifacts/raw_transactions.jsonl
+uv run python scripts/train_fraud_model.py --input artifacts/training_dataset.csv --model-output artifacts/fraud_model.pkl --metrics-output artifacts/metrics.json --fairness-output artifacts/fairness.json
 ```
 
 ## Expected Outputs

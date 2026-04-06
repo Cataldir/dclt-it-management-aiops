@@ -14,15 +14,15 @@ By the end of this lesson, the class should understand:
 
 ## Lesson Application
 
-Application demonstrated: local remediation flow with playbook selection, approval, execution, and Monte Carlo evaluation.
+Application demonstrated: the same remediation flow running in `local-policy` or `foundry-agent` mode, plus workflow-oriented agent scripts for remediation planning and evaluation review.
 
-Main files: `anomaly_remediation.py` and `stochastic_evaluation.py`
+Main files: `anomaly_remediation.py`, `agentic_remediation_pipeline.py`, `stochastic_evaluation.py`, and `agentic_evaluation_gate.py`
 
 ## Application Build Sequence
 
 ### Build 1 - Detect and classify the incident
 
-### Build 2 - Choose the right playbook
+### Build 2 - Choose the right playbook with local policy or a Foundry agent
 
 ### Build 3 - Require approval when necessary
 
@@ -30,11 +30,17 @@ Main files: `anomaly_remediation.py` and `stochastic_evaluation.py`
 
 ### Build 5 - Measure adherence, safety, and resolution
 
+### Build 6 - Add an agentic evaluation gate to the workflow
+
 ## Demo Commands
 
 ```bash
-python anomaly_remediation.py --scenario bad_release --auto-approve
-python stochastic_evaluation.py --episodes 10
+python anomaly_remediation.py --scenario bad_release --mode local-policy --auto-approve
+python stochastic_evaluation.py --episodes 10 --mode local-policy
+python anomaly_remediation.py --scenario bad_release --mode foundry-agent --auto-approve
+python stochastic_evaluation.py --episodes 10 --mode foundry-agent
+python agentic_remediation_pipeline.py --scenario bad_release --mode auto --auto-approve --output artifacts/remediation-agent.json
+python agentic_evaluation_gate.py --episodes 10 --mode auto --remediation-mode auto --output artifacts/evaluation-gate.json
 ```
 
 ## Where To Apply This Knowledge

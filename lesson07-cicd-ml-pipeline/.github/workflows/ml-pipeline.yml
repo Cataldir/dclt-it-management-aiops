@@ -36,15 +36,16 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.13"
+      - uses: astral-sh/setup-uv@v5
 
-      - name: Install dependencies
-        run: pip install -r requirements-ml.txt
+      - name: Sync project environment
+        run: uv sync --python 3.13
 
       - name: Train model
         id: train
         run: |
-          python src/train.py \
+          uv run python src/train.py \
             --data data/features/latest.csv \
             --output models/credit_risk_v${{ github.run_number }}.pkl
           echo "model_path=models/credit_risk_v${{ github.run_number }}.pkl" >> $GITHUB_OUTPUT
@@ -52,7 +53,7 @@ jobs:
       - name: Evaluate metrics
         id: metrics
         run: |
-          ACCURACY=$(python src/evaluate.py --model ${{ steps.train.outputs.model_path }} --data data/features/latest.csv --output artifacts/train-metrics.json)
+          ACCURACY=$(uv run python src/evaluate.py --model ${{ steps.train.outputs.model_path }} --data data/features/latest.csv --output artifacts/train-metrics.json)
           echo "accuracy=$ACCURACY" >> $GITHUB_OUTPUT
 
       - uses: actions/upload-artifact@v4
@@ -67,14 +68,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.13"
+      - uses: astral-sh/setup-uv@v5
 
-      - name: Install dependencies
-        run: pip install -r requirements-ml.txt
+      - name: Sync project environment
+        run: uv sync --python 3.13
 
       - name: Check accuracy threshold
         run: |
-          python - <<'PY'
+          uv run python - <<'PY'
           accuracy = float("${{ needs.train.outputs.accuracy }}")
           threshold = float("${{ env.MIN_ACCURACY }}")
           if accuracy < threshold:
@@ -83,13 +85,13 @@ jobs:
 
       - name: Bias and fairness tests
         run: |
-          python src/bias_check.py \
+          uv run python src/bias_check.py \
             --model ${{ needs.train.outputs.model_path }} \
             --data data/features/latest.csv \
             --output artifacts/fairness-report.json
 
       - name: Integration tests
-        run: pytest tests/integration/ -v
+        run: uv run pytest tests/integration/ -v
 
   deploy:
     needs: [train, validate]
@@ -98,10 +100,11 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.13"
+      - uses: astral-sh/setup-uv@v5
 
-      - name: Install dependencies
-        run: pip install -r requirements-ml.txt
+      - name: Sync project environment
+        run: uv sync --python 3.13
 
       - uses: actions/download-artifact@v4
         with:
@@ -110,7 +113,7 @@ jobs:
 
       - name: Agentic release gate
         run: |
-          python src/foundry_release_gate.py \
+          uv run python src/foundry_release_gate.py \
             --model ${{ needs.train.outputs.model_path }} \
             --data data/features/latest.csv \
             --accuracy-threshold ${{ env.MIN_ACCURACY }} \
@@ -128,14 +131,14 @@ jobs:
 
       - name: Canary deployment (10% of traffic)
         run: |
-          python src/deploy.py \
+          uv run python src/deploy.py \
             --strategy canary --weight 10 \
             --model ${{ needs.train.outputs.model_path }} \
             --output artifacts/deployment-report.json
 
       - name: Register model in the registry
         run: |
-          python src/register_model.py \
+          uv run python src/register_model.py \
             --path ${{ needs.train.outputs.model_path }} \
             --accuracy ${{ needs.train.outputs.accuracy }} \
             --run-id ${{ github.run_id }} \

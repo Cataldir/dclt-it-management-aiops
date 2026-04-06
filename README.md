@@ -22,7 +22,7 @@ Hands-on observability and proactive detection demo with:
 - incident and severity classification
 - initial action recommendation
 
-**Tecnologias**: Python, NumPy
+**Technologies**: Python, NumPy
 
 ### [Lesson 02 - ML Pipeline MLflow](./lesson02-ml-pipeline-mlflow/)
 **ML pipeline with artifacts and tracking**
@@ -33,7 +33,7 @@ Machine learning pipeline lab with:
 - persisted metrics
 - model card and optional tracking
 
-**Tecnologias**: Python, pandas, scikit-learn, MLflow
+**Technologies**: Python, pandas, scikit-learn, MLflow
 
 ### [Lesson 03 - Terraform Infrastructure](./lesson03-infra-terraform/)
 **AI infrastructure as code**
@@ -44,7 +44,7 @@ Infrastructure baseline for AI workloads with:
 - AKS
 - GPU node pool
 
-**Tecnologias**: Terraform, Azure
+**Technologies**: Terraform, Azure
 
 ### [Lesson 04 - Model Validation](./lesson04-model-validation/)
 **Model promotion gate**
@@ -54,7 +54,7 @@ Candidate validation with:
 - fairness by group
 - structured pipeline decision
 
-**Tecnologias**: Python, NumPy, scikit-learn
+**Technologies**: Python, NumPy, scikit-learn
 
 ### [Lesson 05 - Orchestration Airflow](./lesson05-orchestration-airflow/)
 **Fraud workflow with canary deployment and rollout**
@@ -65,7 +65,7 @@ ML pipeline orchestration with:
 - validation
 - canary deployment and monitoring
 
-**Tecnologias**: Python, Apache Airflow
+**Technologies**: Python, Apache Airflow
 
 ### [Lesson 06 - MCP Tools](./lesson06-mcp-tools/)
 **Operational tools for agents**
@@ -76,7 +76,7 @@ MCP server demonstrating:
 - remediation planning
 - local auditing
 
-**Tecnologias**: Python, JSON-RPC, JSON Schema, MCP
+**Technologies**: Python, JSON-RPC, JSON Schema, MCP
 
 ### [Lesson 07 - CI/CD ML Pipeline](./lesson07-cicd-ml-pipeline/)
 **Governed train, validate, and deploy pipeline**
@@ -88,7 +88,7 @@ CI/CD pipeline with:
 - Terraform during deployment
 - artifact registration
 
-**Tecnologias**: GitHub Actions, Python, Terraform, pytest, Azure AI Foundry
+**Technologies**: GitHub Actions, Python, Terraform, pytest, Azure AI Foundry
 
 ### [Lesson 08 - AIOps Practice](./lesson08-aiops-practice/)
 **Agentic remediation with stochastic evaluation**
@@ -99,7 +99,7 @@ Operational capstone with:
 - human approval
 - execution and Monte Carlo evaluation
 
-**Tecnologias**: Python, NumPy, JSON
+**Technologies**: Python, NumPy, JSON, Azure AI Foundry
 
 ---
 
@@ -107,8 +107,8 @@ Operational capstone with:
 
 ### Minimum baseline
 
-- Python 3.11+
-- `pip`
+- Python 3.13
+- `uv`
 - Git
 
 ### Module-specific tools
@@ -143,12 +143,21 @@ lessonXX-module/
 4. Read `docs/README.md` for architecture, usage, and troubleshooting details.
 5. Run the quick-start flow for that module.
 
-Exemplo:
+Each Python-based lesson now ships with its own `pyproject.toml` and can be prepared either with the root bootstrap script or by running `uv sync` inside the lesson directory.
+
+Example:
 
 ```bash
+uv python install 3.13
+python bootstrap.py lesson01-aiops-anomaly-detection
 cd lesson01-aiops-anomaly-detection
-pip install -r requirements.txt
-python anomaly_detection.py --scenario latency_spike --save-report artifacts/report.json
+uv run python anomaly_detection.py --scenario latency_spike --save-report artifacts/report.json
+```
+
+To bootstrap every Python lesson from the repository root:
+
+```bash
+python bootstrap.py
 ```
 
 ---
@@ -168,16 +177,11 @@ python anomaly_detection.py --scenario latency_spike --save-report artifacts/rep
 
 ## Common Troubleshooting
 
-### Missing Python dependencies
+### Missing or outdated Python dependencies
 
 ```bash
-pip install -r requirements.txt
-```
-
-For the CI/CD modules:
-
-```bash
-pip install -r requirements-ml.txt
+cd lesson01-aiops-anomaly-detection
+uv sync --python 3.13
 ```
 
 ### Terraform not initialized

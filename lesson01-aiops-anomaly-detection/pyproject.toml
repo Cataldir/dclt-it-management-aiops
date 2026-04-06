@@ -1,0 +1,11 @@
+[project]
+name = "lesson01-aiops-anomaly-detection"
+version = "0.1.0"
+description = "Lesson 01 anomaly detection mini-application."
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "numpy",
+]
+
+[tool.uv]
+package = false

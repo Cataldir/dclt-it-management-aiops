@@ -1,0 +1,14 @@
+[project]
+name = "lesson08-aiops-practice"
+version = "0.1.0"
+description = "Lesson 08 agentic remediation mini-application."
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "numpy",
+    "azure-ai-projects",
+    "azure-identity",
+    "python-dotenv",
+]
+
+[tool.uv]
+package = false

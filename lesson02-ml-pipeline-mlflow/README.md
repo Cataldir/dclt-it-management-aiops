@@ -14,15 +14,15 @@ This module shows the minimum lifecycle of an AI application that needs to move 
 
 ## Technologies
 
-- Python 3.11+
+- Python 3.13
 - pandas
 - scikit-learn
 - MLflow
 
 ## Prerequisites
 
-- Python 3.11+
-- `pip`
+- Python 3.13
+- `uv`
 
 ## Module Structure
 
@@ -30,19 +30,19 @@ This module shows the minimum lifecycle of an AI application that needs to move 
 - `LESSON_SCRIPT.md`: lesson script / presentation guide.
 - `docs/README.md`: supporting documentation and practical applications.
 - `ml_pipeline.py`: main executable.
-- `requirements.txt`: module dependencies.
+- `pyproject.toml`: lesson-local UV project definition.
 
 ## Quick Start
 
 ```bash
-pip install -r requirements.txt
-python ml_pipeline.py --artifacts-dir artifacts
+uv sync --python 3.13
+uv run python ml_pipeline.py --artifacts-dir artifacts
 ```
 
 To use your own CSV:
 
 ```bash
-python ml_pipeline.py --data patient_data.csv --artifacts-dir artifacts
+uv run python ml_pipeline.py --data patient_data.csv --artifacts-dir artifacts
 ```
 
 ## Expected Outputs

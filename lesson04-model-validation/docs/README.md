@@ -18,5 +18,5 @@ The module takes a production baseline and a candidate, computes global and grou
 
 ## Quick Troubleshooting
 
-- If `scikit-learn` is not installed, reinstall dependencies with `pip install -r requirements.txt`.
+- If `scikit-learn` is not installed, rerun `uv sync --python 3.13` from the lesson directory.
 - Use the three provided scenarios to demonstrate approval, performance rejection, and fairness rejection.
