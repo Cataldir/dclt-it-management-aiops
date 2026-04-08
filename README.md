@@ -4,6 +4,8 @@ This repository contains the hands-on course material for **IT Service Managemen
 
 The structure was aligned with the course notes in `D:\Documentos\FIAP\AI Ops\Materiais Escritos` and standardized into a format closer to the `Cataldir/k8savancado` repository: independent modules, predictable navigation, and repeatable documentation structure.
 
+[Sneak Peak on Shadow](https://youtu.be/qPFsmAWf2nc?si=vpOHqq4vewq5eNLL)
+
 ---
 
 ## About The Course
