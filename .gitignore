@@ -1,6 +1,7 @@
 .env
 .venv/
 **/.venv/
+.airflow/
 __pycache__/
 **/__pycache__/
 *.py[cod]

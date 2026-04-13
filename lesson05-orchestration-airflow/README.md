@@ -41,6 +41,25 @@ This module turns isolated scripts into a repeatable and monitorable workflow. T
 
 ## Quick Start
 
+Preferred for students (cross-platform, including Windows):
+
+```bash
+cd lesson05-orchestration-airflow
+docker compose up --build -d
+docker compose exec airflow-webserver airflow dags test fraud_model_pipeline 2026-01-01
+```
+
+Airflow UI: `http://localhost:8080`  
+Default credentials: `admin` / `admin`
+
+To stop the environment:
+
+```bash
+docker compose down -v
+```
+
+Local UV path (optional):
+
 ```bash
 uv sync --python 3.13
 uv run airflow dags test fraud_model_pipeline 2026-01-01

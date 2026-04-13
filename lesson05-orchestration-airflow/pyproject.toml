@@ -12,6 +12,7 @@ dependencies = [
     "agent-framework-core==1.0.0rc3",
     "azure-identity",
     "python-dotenv",
+    "sqlalchemy>=2.0,<2.1",
 ]
 
 [tool.uv]

@@ -37,7 +37,8 @@ Goal: demonstrate how a Foundry agent (or local policy) can decide whether a can
 ## Demo Commands
 
 ```bash
-airflow dags test fraud_model_pipeline 2026-01-01
+docker compose up --build -d
+docker compose exec airflow-webserver airflow dags test fraud_model_pipeline 2026-01-01
 python scripts/ingest_transactions.py --output artifacts/raw_transactions.jsonl
 python canary_observer_agent.py --scenario healthy --mode auto --output artifacts/canary-continue.json
 python canary_observer_agent.py --scenario error_spike --mode auto --output artifacts/canary-rollback.json
