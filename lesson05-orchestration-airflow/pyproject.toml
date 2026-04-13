@@ -8,7 +8,8 @@ dependencies = [
     "numpy",
     "pandas",
     "scikit-learn",
-    "azure-ai-projects",
+    "agent-framework-azure-ai==1.0.0rc3",
+    "agent-framework-core==1.0.0rc3",
     "azure-identity",
     "python-dotenv",
 ]

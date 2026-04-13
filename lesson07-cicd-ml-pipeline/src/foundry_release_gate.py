@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
 import json
 import os
 from typing import Any
@@ -23,6 +24,9 @@ FOUNDRY_REQUIRED_ENV_VARS = (
 
 def foundry_is_configured() -> bool:
     """Return whether the local environment is configured to use Foundry."""
+    from dotenv import load_dotenv
+
+    load_dotenv(override=False)
     return all(os.getenv(variable_name) for variable_name in FOUNDRY_REQUIRED_ENV_VARS)
 
 
@@ -155,15 +159,11 @@ def parse_agent_json(raw_text: str) -> dict[str, Any]:
 def run_foundry_release_review(context: dict[str, Any]) -> dict[str, Any]:
     """Run release review with a versioned agent in Azure AI Foundry.
 
-    Uses the azure-ai-projects >= 2.0.0 Responses-based Agent API.
+    Uses the Microsoft Agent Framework SDK (agent-framework-azure-ai).
     """
     from dotenv import load_dotenv
 
     load_dotenv(override=False)
-
-    from azure.ai.projects import AIProjectClient
-    from azure.ai.projects.models import PromptAgentDefinition
-    from azure.identity import DefaultAzureCredential
 
     project_endpoint = os.getenv("FOUNDRY_PROJECT_ENDPOINT")
     model_name = os.getenv("FOUNDRY_MODEL_DEPLOYMENT_NAME")
@@ -174,46 +174,36 @@ def run_foundry_release_review(context: dict[str, Any]) -> dict[str, Any]:
             "Set FOUNDRY_PROJECT_ENDPOINT and FOUNDRY_MODEL_DEPLOYMENT_NAME to use Foundry mode."
         )
 
-    with (
-        DefaultAzureCredential() as credential,
-        AIProjectClient(endpoint=project_endpoint, credential=credential) as project_client,
-        project_client.get_openai_client() as openai_client,
-    ):
-        agent = project_client.agents.create_version(
-            agent_name=agent_name,
-            definition=PromptAgentDefinition(
-                model=model_name,
-                instructions=(
-                    "You are a DevOps governance agent. "
-                    "Evaluate model release risk based on accuracy, fairness, and rollout strategy. "
-                    "Respond only in JSON."
-                ),
-            ),
-        )
+    async def _run() -> dict[str, Any]:
+        from agent_framework import Message
+        from agent_framework.azure import AzureAIClient
+        from azure.identity.aio import DefaultAzureCredential
 
-        conversation_id: str | None = None
-        try:
-            conversation = openai_client.conversations.create(
-                items=[{"type": "message", "role": "user", "content": build_foundry_prompt(context)}],
+        async with DefaultAzureCredential() as credential:
+            client = AzureAIClient(
+                project_endpoint=project_endpoint,
+                model_deployment_name=model_name,
+                agent_name=agent_name,
+                credential=credential,
+                use_latest_version=True,
             )
-            conversation_id = conversation.id
-            response = openai_client.responses.create(
-                conversation=conversation_id,
-                extra_body={
-                    "agent_reference": {"name": agent.name, "type": "agent_reference"},
-                },
-            )
-            result = parse_agent_json(response.output_text)
-            result["engine"] = "azure-ai-foundry"
-            result["agent_name"] = agent.name
-            result["agent_version"] = agent.version
-            return result
-        finally:
-            if conversation_id is not None:
-                openai_client.conversations.delete(conversation_id=conversation_id)
-            project_client.agents.delete_version(
-                agent_name=agent.name, agent_version=agent.version,
-            )
+            try:
+                response = await client.get_response([
+                    Message("system", [
+                        "You are a DevOps governance agent. "
+                        "Evaluate model release risk based on accuracy, fairness, and rollout strategy. "
+                        "Respond only in JSON."
+                    ]),
+                    Message("user", [build_foundry_prompt(context)]),
+                ])
+                result = parse_agent_json(response.text)
+                result["engine"] = "azure-ai-foundry"
+                result["agent_name"] = agent_name
+                return result
+            finally:
+                await client.close()
+
+    return asyncio.run(_run())
 
 
 def evaluate_release(

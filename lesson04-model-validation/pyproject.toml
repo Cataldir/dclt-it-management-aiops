@@ -6,7 +6,8 @@ requires-python = ">=3.13,<3.14"
 dependencies = [
     "numpy",
     "scikit-learn",
-    "azure-ai-projects",
+    "agent-framework-azure-ai==1.0.0rc3",
+    "agent-framework-core==1.0.0rc3",
     "azure-identity",
     "python-dotenv",
 ]

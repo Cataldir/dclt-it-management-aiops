@@ -1,11 +1,12 @@
 """Shared Foundry agent helper for Lesson 02.
 
-Uses the azure-ai-projects >= 2.0.0 Responses-based Agent API.
-See https://learn.microsoft.com/python/api/overview/azure/ai-projects-readme
+Uses the Microsoft Agent Framework SDK (agent-framework-azure-ai).
+See https://learn.microsoft.com/azure/ai-foundry/agents/
 """
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 from typing import Any
@@ -25,6 +26,9 @@ CLI_MODE_CHOICES = (*NORMALIZED_MODES, *MODE_ALIASES.keys())
 
 
 def foundry_is_configured() -> bool:
+    from dotenv import load_dotenv
+
+    load_dotenv(override=False)
     return all(os.getenv(v) for v in FOUNDRY_REQUIRED_ENV_VARS)
 
 
@@ -45,6 +49,39 @@ def parse_agent_json(raw_text: str) -> dict[str, Any]:
     return json.loads(stripped[start : end + 1])
 
 
+async def _run_foundry_agent_async(
+    prompt: str,
+    *,
+    instructions: str,
+    agent_name: str,
+    project_endpoint: str,
+    model_name: str,
+) -> dict[str, Any]:
+    from agent_framework import Message
+    from agent_framework.azure import AzureAIClient
+    from azure.identity.aio import DefaultAzureCredential
+
+    async with DefaultAzureCredential() as credential:
+        client = AzureAIClient(
+            project_endpoint=project_endpoint,
+            model_deployment_name=model_name,
+            agent_name=agent_name,
+            credential=credential,
+            use_latest_version=True,
+        )
+        try:
+            response = await client.get_response([
+                Message("system", [instructions]),
+                Message("user", [prompt]),
+            ])
+            result = parse_agent_json(response.text)
+            result["engine"] = "azure-ai-foundry"
+            result["agent_name"] = agent_name
+            return result
+        finally:
+            await client.close()
+
+
 def run_foundry_json_agent(
     prompt: str,
     *,
@@ -56,10 +93,6 @@ def run_foundry_json_agent(
 
     load_dotenv(override=False)
 
-    from azure.ai.projects import AIProjectClient
-    from azure.ai.projects.models import PromptAgentDefinition
-    from azure.identity import DefaultAzureCredential
-
     project_endpoint = os.getenv("FOUNDRY_PROJECT_ENDPOINT")
     model_name = os.getenv("FOUNDRY_MODEL_DEPLOYMENT_NAME")
     agent_name = os.getenv(agent_name_env_var, default_agent_name)
@@ -69,39 +102,12 @@ def run_foundry_json_agent(
             "Set FOUNDRY_PROJECT_ENDPOINT and FOUNDRY_MODEL_DEPLOYMENT_NAME to use Foundry mode."
         )
 
-    with (
-        DefaultAzureCredential() as credential,
-        AIProjectClient(endpoint=project_endpoint, credential=credential) as project_client,
-        project_client.get_openai_client() as openai_client,
-    ):
-        agent = project_client.agents.create_version(
+    return asyncio.run(
+        _run_foundry_agent_async(
+            prompt,
+            instructions=instructions,
             agent_name=agent_name,
-            definition=PromptAgentDefinition(
-                model=model_name,
-                instructions=instructions,
-            ),
+            project_endpoint=project_endpoint,
+            model_name=model_name,
         )
-
-        conversation_id: str | None = None
-        try:
-            conversation = openai_client.conversations.create(
-                items=[{"type": "message", "role": "user", "content": prompt}],
-            )
-            conversation_id = conversation.id
-            response = openai_client.responses.create(
-                conversation=conversation_id,
-                extra_body={
-                    "agent_reference": {"name": agent.name, "type": "agent_reference"},
-                },
-            )
-            result = parse_agent_json(response.output_text)
-            result["engine"] = "azure-ai-foundry"
-            result["agent_name"] = agent.name
-            result["agent_version"] = agent.version
-            return result
-        finally:
-            if conversation_id is not None:
-                openai_client.conversations.delete(conversation_id=conversation_id)
-            project_client.agents.delete_version(
-                agent_name=agent.name, agent_version=agent.version,
-            )
+    )
